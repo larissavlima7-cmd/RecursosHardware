@@ -9,6 +9,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  #bd
+  sqflite: ^2.3.0
+  path_provider: ^2.1.2
+  path: ^1.8.3
+  # para imagem, gps...
+  image_picker: ^1.0.7
+  geolocator: ^10.1.0
+  permission_handler: ^11.2.0
+
+  #som
+  audioplayers: ^5.2.1
 
 dev_dependencies:
   flutter_test:
