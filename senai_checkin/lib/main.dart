@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:senai_checkin/Screen/lista_registro.dart';
+
 
 void main() {
-  runApp(const MainApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const SenaiCheckInApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class SenaiCheckInApp extends StatelessWidget {
+  const SenaiCheckInApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
+    return MaterialApp(
+      title: 'SENAI CheckIn',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue[900]!),
+        useMaterial3: true,
+      ),
+      home: const ListaRegistros(),
     );
   }
 }

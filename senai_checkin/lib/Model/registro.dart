@@ -21,9 +21,14 @@ class Registro {
     };
   }
 
-  factory Registro.fromMap(Map<String, dynamic> Map){
+  factory Registro.fromMap(Map<String, dynamic> map){
     return Registro(
-      id: 
-    )
+      id: map['id'],
+      datahora: map['data_hora'],
+      latitude: map['latitude'],
+      longitude: map['longitude'],
+      observacao: map['observacao'],
+      caminhoFoto: map['caminho_foto'],
+    );
   }
 }
