@@ -29,6 +29,25 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
   bool _salvando = false;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _solicitarPermissoesIniciais();
+  }
+
+  Future<void> _solicitarPermissoesIniciais() async {
+    // Chama o método do controller para solicitar Câmera e GPS
+    bool concedidas = await _hardwareController.solicitarPermissoes();
+
+    if (!concedidas && mounted) {
+      _exibirSnackBar(
+        'Atenção: É necessário conceder as permissões de Câmera e Localização para registrar o ponto.',
+        isErro: true,
+      );
+    }
+  }
+
+  @override
   void dispose() {
     _observacaoController.dispose();
     _audioPlayer.dispose();
@@ -74,14 +93,15 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
 
   // Executa um efeito sonoro de confirmação usando a API web do audioplayers
   Future<void> _tocarSomConfirmacao() async {
-    try {
-      await _audioPlayer.play(
-        UrlSource('https://codeskulptor-demos.commondatastorage.googleapis.com/rigel/mark.m4a'),
-      );
-    } catch (_) {
-      // Caso o dispositivo esteja sem conexão, ignora falha do som online
-    }
+  try {
+    // O AssetSource busca por padrão dentro da pasta 'assets/'
+    await _audioPlayer.play(
+      AssetSource('sounds/confirmacao.mp3'),
+    );
+  } catch (e) {
+    debugPrint('Erro ao tocar o som de confirmação: $e');
   }
+}
 
   // Valida e salva o registro no banco SQLite
   Future<void> _salvarRegistro() async {
@@ -227,20 +247,18 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
                           ),
                         ],
                       ),
-                      const Divider(),
-                      Text(
-                        _latitude != null && _longitude != null
-                            ? 'Lat: ${_latitude!.toStringAsFixed(6)} | Long: ${_longitude!.toStringAsFixed(6)}'
-                            : 'Clique em "Obter GPS" para capturar a localização.',
-                        style: TextStyle(
-                          color: _latitude != null ? Colors.black: Colors.red[700],
+                      // Exibe o divisor e os dados somente se as coordenadas já tiverem sido capturadas
+                      if (_latitude != null && _longitude != null) ...[
+                        const Divider(),
+                        Text(
+                          'Lat: ${_latitude!.toStringAsFixed(6)} | Long: ${_longitude!.toStringAsFixed(6)}',
+                          style: const TextStyle(color: Colors.black),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
 
               // Bloco 3: Observações
               TextFormField(

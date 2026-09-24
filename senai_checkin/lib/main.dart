@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:senai_checkin/Screen/lista_registro.dart';
+import 'package:senai_checkin/View/lista_registro.dart';
 
 
 void main() {

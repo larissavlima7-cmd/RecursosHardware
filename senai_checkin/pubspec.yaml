@@ -11,15 +11,18 @@ dependencies:
     sdk: flutter
   #bd
   sqflite: ^2.3.0
-  path_provider: ^2.1.2
-  path: ^1.8.3
+  path_provider: ^2.1.6
+  path: ^1.9.1
   # para imagem, gps...
-  image_picker: ^1.0.7
-  geolocator: ^10.1.0
-  permission_handler: ^11.2.0
+  image_picker: ^1.2.3
+  geolocator: ^14.0.3
+  permission_handler: ^13.0.2
 
   #som
-  audioplayers: ^5.2.1
+  audioplayers: ^6.0.0
+  url_launcher: ^6.3.2
+  geocoding: ^5.0.0
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -28,3 +31,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/sounds/

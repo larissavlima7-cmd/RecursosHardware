@@ -2,10 +2,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../model/registro.dart';
 
-/// Classe responsável por gerenciar a conexão e operações com o banco de dados SQLite local.
-/// Implementa o padrão de projeto Singleton para evitar múltiplas conexões abertas ao mesmo tempo.
+// vai gerenciar a conexão e operações com o banco de dados SQLite local.
 class DatabaseHelper {
-  // Instância única mantida pela classe (Padrão Singleton)
   static final DatabaseHelper _instance = DatabaseHelper._internal();
 
   // Construtor factory que sempre retorna a mesma instância existente
@@ -73,5 +71,10 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) {
       return Registro.fromMap(maps[i]);
     });
+  }
+
+  Future<int> deleteRegistro(int id) async {
+  Database db = await database;
+  return await db.delete('registros', where: 'id = ?', whereArgs: [id]);
   }
 }
