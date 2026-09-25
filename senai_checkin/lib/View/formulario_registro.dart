@@ -5,6 +5,7 @@ import '../controller/database_helper.dart';
 import '../controller/registro_controller.dart';
 import '../model/registro.dart';
 
+/// Formulário de registro adaptativo às cores do tema
 class FormularioRegistro extends StatefulWidget {
   const FormularioRegistro({super.key});
 
@@ -30,20 +31,14 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _solicitarPermissoesIniciais();
   }
 
   Future<void> _solicitarPermissoesIniciais() async {
-    // Chama o método do controller para solicitar Câmera e GPS
     bool concedidas = await _hardwareController.solicitarPermissoes();
-
     if (!concedidas && mounted) {
-      _exibirSnackBar(
-        'Atenção: É necessário conceder as permissões de Câmera e Localização para registrar o ponto.',
-        isErro: true,
-      );
+      _exibirSnackBar('Atenção: É necessário conceder permissões para registrar o ponto.', isErro: true);
     }
   }
 
@@ -54,7 +49,6 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
     super.dispose();
   }
 
-  // Obtém as coordenadas do GPS usando o RegistroController
   Future<void> _capturarGPS() async {
     setState(() => _carregandoGPS = true);
     try {
@@ -73,15 +67,12 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
     }
   }
 
-  // Aciona a câmera usando o RegistroController
   Future<void> _tirarFoto() async {
     setState(() => _carregandoFoto = true);
     try {
       final caminho = await _hardwareController.capturarFoto();
       if (caminho != null) {
-        setState(() {
-          _caminhoFoto = caminho;
-        });
+        setState(() => _caminhoFoto = caminho);
         _exibirSnackBar('Foto capturada com sucesso!', isErro: false);
       }
     } catch (e) {
@@ -91,19 +82,14 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
     }
   }
 
-  // Executa um efeito sonoro de confirmação usando a API web do audioplayers
   Future<void> _tocarSomConfirmacao() async {
-  try {
-    // O AssetSource busca por padrão dentro da pasta 'assets/'
-    await _audioPlayer.play(
-      AssetSource('sounds/confirmacao.mp3'),
-    );
-  } catch (e) {
-    debugPrint('Erro ao tocar o som de confirmação: $e');
+    try {
+      await _audioPlayer.play(AssetSource('sounds/confirmacao.mp3'));
+    } catch (e) {
+      debugPrint('Erro ao tocar o som: $e');
+    }
   }
-}
 
-  // Valida e salva o registro no banco SQLite
   Future<void> _salvarRegistro() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -120,7 +106,6 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
     setState(() => _salvando = true);
 
     try {
-      // Formatação simples da data/hora atual
       final agora = DateTime.now();
       final dataHoraFormatada = 
           '${agora.day.toString().padLeft(2, '0')}/${agora.month.toString().padLeft(2, '0')}/${agora.year} '
@@ -139,8 +124,6 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
 
       if (!mounted) return;
       _exibirSnackBar('Registro salvo com sucesso!', isErro: false);
-      
-      // Retorna true para a tela anterior recarregar a lista
       Navigator.pop(context, true); 
     } catch (e) {
       _exibirSnackBar('Erro ao salvar no banco: $e', isErro: true);
@@ -154,7 +137,8 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
       SnackBar(
         content: Text(mensagem),
         backgroundColor: isErro ? Colors.red[700] : Colors.green[700],
-        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -163,66 +147,63 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Novo Registro de Ponto'),
-        backgroundColor: Colors.blue[900],
-        foregroundColor: Colors.white,
+        title: const Text('Novo Registro'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Bloco 1: Preview da Foto
+              // Área da Foto
               Container(
-                height: 200,
+                height: 220,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey[400]!),
+                  color: Theme.of(context).cardTheme.color,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1.5),
+                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
                 ),
                 child: _caminhoFoto != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(20),
                         child: Image.file(
                           File(_caminhoFoto!),
                           fit: BoxFit.cover,
                           width: double.infinity,
                         ),
                       )
-                    : const Center(
+                    : Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.camera_alt, size: 50, color: Colors.grey),
-                            SizedBox(height: 8),
-                            Text('Nenhuma foto capturada'),
+                            Icon(Icons.add_a_photo_outlined, size: 55, color: Theme.of(context).colorScheme.primary),
+                            const SizedBox(height: 10),
+                            const Text(
+                              'Nenhuma foto capturada',
+                              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+                            ),
                           ],
                         ),
                       ),
               ),
               const SizedBox(height: 12),
 
-              // Botão para Tirar Foto
+              // Botão Câmera
               ElevatedButton.icon(
                 onPressed: _carregandoFoto ? null : _tirarFoto,
                 icon: _carregandoFoto
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.photo_camera),
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.camera_alt),
                 label: Text(_carregandoFoto ? 'Acessando Câmera...' : 'Tirar Foto'),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // Bloco 2: Localização GPS
+              // Card do GPS
               Card(
-                elevation: 2,
                 child: Padding(
-                  padding: const EdgeInsets.all(12.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
                       Row(
@@ -230,44 +211,59 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.location_on, color: Colors.red),
+                              Icon(Icons.location_on, color: Colors.redAccent),
                               SizedBox(width: 8),
-                              Text('Coordenadas GPS:', style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('GPS:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                             ],
                           ),
-                          ElevatedButton(
+                          OutlinedButton.icon(
                             onPressed: _carregandoGPS ? null : _capturarGPS,
-                            child: _carregandoGPS
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Text('Obter GPS'),
+                            icon: const Icon(Icons.my_location, size: 18),
+                            label: Text(_carregandoGPS ? 'Obtendo...' : 'Capturar GPS'),
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
                           ),
                         ],
                       ),
-                      // Exibe o divisor e os dados somente se as coordenadas já tiverem sido capturadas
                       if (_latitude != null && _longitude != null) ...[
-                        const Divider(),
-                        Text(
-                          'Lat: ${_latitude!.toStringAsFixed(6)} | Long: ${_longitude!.toStringAsFixed(6)}',
-                          style: const TextStyle(color: Colors.black),
+                        const Divider(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Lat: ${_latitude!.toStringAsFixed(5)} | Long: ${_longitude!.toStringAsFixed(5)}',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ],
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
 
-              // Bloco 3: Observações
+              // Campo Observação
               TextFormField(
                 controller: _observacaoController,
                 maxLines: 3,
                 decoration: const InputDecoration(
                   labelText: 'Observação / Diário de Campo',
-                  hintText: 'Descreva a atividade ou motivo da visita...',
-                  border: OutlineInputBorder(),
+                  hintText: 'Descreva a atividade realizada...',
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.only(bottom: 40),
+                    child: Icon(Icons.edit_note),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -276,21 +272,19 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
 
               // Botão Salvar
               ElevatedButton(
                 onPressed: _salvando ? null : _salvarRegistro,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[900],
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: _salvando
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                         'SALVAR REGISTRO',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1),
                       ),
               ),
             ],

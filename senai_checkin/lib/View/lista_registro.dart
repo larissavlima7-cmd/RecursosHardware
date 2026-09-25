@@ -4,8 +4,10 @@ import 'package:url_launcher/url_launcher.dart';
 import '../controller/database_helper.dart';
 import '../controller/registro_controller.dart';
 import '../model/registro.dart';
+import '../main.dart'; // Importante para acessar o themeNotifier
 import 'formulario_registro.dart';
 
+/// Tela principal de listagem com suporte a troca de temas e tema vermelho
 class ListaRegistros extends StatefulWidget {
   const ListaRegistros({super.key});
 
@@ -29,9 +31,7 @@ class _ListaRegistrosState extends State<ListaRegistros> {
     setState(() => _carregando = true);
     try {
       final dados = await _dbHelper.getRegistros();
-      setState(() {
-        _registros = dados;
-      });
+      setState(() => _registros = dados);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -39,9 +39,7 @@ class _ListaRegistrosState extends State<ListaRegistros> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _carregando = false);
-      }
+      if (mounted) setState(() => _carregando = false);
     }
   }
 
@@ -62,12 +60,13 @@ class _ListaRegistrosState extends State<ListaRegistros> {
   Future<void> _excluirRegistro(int id) async {
     await _dbHelper.deleteRegistro(id);
     if (mounted) {
-      Navigator.pop(context); // Fecha a modal
-      _carregarRegistros();  // Atualiza a lista na tela
+      _carregarRegistros();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registro excluído com sucesso!'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Registro excluído com sucesso!'),
+          backgroundColor: Colors.green[700],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     }
@@ -77,75 +76,81 @@ class _ListaRegistrosState extends State<ListaRegistros> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Registro #${registro.id}'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.assignment_turned_in, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Text('Registro #${registro.id}', style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Imagem salva
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
                 child: Image.file(
                   File(registro.caminhoFoto),
-                  height: 180,
+                  height: 190,
                   width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     height: 150,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image, size: 50),
+                    color: Colors.grey[800],
+                    child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text('Data/Hora:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue[900])),
-              Text(registro.datahora),
-              const SizedBox(height: 8),
-              
-              Text('Localização (Cidade/País):', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue[900])),
+              const SizedBox(height: 16),
+
+              _construirLinhaDetalhe(Icons.access_time_filled, 'Data e Hora', registro.datahora),
+              const SizedBox(height: 10),
+
               FutureBuilder<String>(
                 future: _controller.obterEnderecoFormatado(registro.latitude, registro.longitude),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Text('Buscando cidade e país...', style: TextStyle(color: Colors.grey, fontSize: 12));
-                  }
-                  return Text(snapshot.data ?? 'Não localizado', style: const TextStyle(fontWeight: FontWeight.w500));
+                  final local = snapshot.connectionState == ConnectionState.waiting
+                      ? 'Buscando localização...'
+                      : (snapshot.data ?? 'Não localizado');
+                  return _construirLinhaDetalhe(Icons.location_on, 'Cidade / País', local);
                 },
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
-              Text('Coordenadas GPS:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue[900])),
-              Text('Lat: ${registro.latitude} | Long: ${registro.longitude}'),
-              const SizedBox(height: 8),
+              _construirLinhaDetalhe(Icons.my_location, 'Coordenadas', 'Lat: ${registro.latitude} | Long: ${registro.longitude}'),
+              const SizedBox(height: 10),
 
-              Text('Observação:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue[900])),
-              Text(registro.observacao),
-              const SizedBox(height: 16),
+              _construirLinhaDetalhe(Icons.notes, 'Observação', registro.observacao),
+              const SizedBox(height: 20),
 
-              // BOTÃO GOOGLE MAPS
+              // Botões de Ação
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _abrirMapa(registro.latitude, registro.longitude),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _abrirMapa(registro.latitude, registro.longitude);
+                  },
                   icon: const Icon(Icons.map, color: Colors.white),
-                  label: const Text('VER NO MAPA'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[900],
-                    foregroundColor: Colors.white,
-                  ),
+                  label: const Text('ABRIR NO GOOGLE MAPS'),
                 ),
               ),
               const SizedBox(height: 8),
-
-              // BOTÃO EXCLUIR
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => _excluirRegistro(registro.id!),
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  label: const Text('EXCLUIR REGISTRO', style: TextStyle(color: Colors.red)),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _excluirRegistro(registro.id!);
+                  },
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  label: const Text('EXCLUIR REGISTRO', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
+                    side: const BorderSide(color: Colors.redAccent, width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
@@ -155,34 +160,56 @@ class _ListaRegistrosState extends State<ListaRegistros> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('FECHAR'),
+            child: const Text('FECHAR', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
 
+  Widget _construirLinhaDetalhe(IconData icone, String titulo, String valor) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icone, size: 20, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(titulo, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold)),
+              Text(valor, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _abrirFormulario() async {
     final resultado = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const FormularioRegistro(),
-      ),
+      MaterialPageRoute(builder: (context) => const FormularioRegistro()),
     );
-
-    if (resultado == true) {
-      _carregarRegistros();
-    }
+    if (resultado == true) _carregarRegistros();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SENAI CheckIn — Diário de Campo'),
-        backgroundColor: Colors.blue[900],
-        foregroundColor: Colors.white,
+        title: const Text('SENAI CheckIn'),
         actions: [
+          // Botão para alternar entre Modo Claro e Escuro
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            tooltip: isDark ? 'Modo Claro' : 'Modo Escuro',
+            onPressed: () {
+              themeNotifier.value = isDark ? ThemeMode.light : ThemeMode.dark;
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _carregarRegistros,
@@ -197,78 +224,133 @@ class _ListaRegistrosState extends State<ListaRegistros> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.assignment_outlined, size: 80, color: Colors.grey[400]),
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.assignment_outlined, size: 70, color: Theme.of(context).colorScheme.primary),
+                      ),
                       const SizedBox(height: 16),
-                      Text(
-                        'Nenhum registro encontrado.',
-                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                      const Text(
+                        'Nenhum registro cadastrado',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Toque no botão abaixo para criar o primeiro.',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(12.0),
                   itemCount: _registros.length,
                   itemBuilder: (context, index) {
                     final registro = _registros[index];
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(8),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.file(
-                            File(registro.caminhoFoto),
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              width: 60,
-                              height: 60,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.camera_alt, color: Colors.grey),
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          registro.datahora,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 4),
-                            Text(
-                              registro.observacao,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Card(
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => _exibirDetalhes(registro),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
                               children: [
-                                const Icon(Icons.location_on, size: 14, color: Colors.red),
-                                const SizedBox(width: 2),
-                                Text(
-                                  '${registro.latitude.toStringAsFixed(4)}, ${registro.longitude.toStringAsFixed(4)}',
-                                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.file(
+                                    File(registro.caminhoFoto),
+                                    width: 75,
+                                    height: 75,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      width: 75,
+                                      height: 75,
+                                      color: Colors.grey[800],
+                                      child: const Icon(Icons.camera_alt, color: Colors.grey),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Tag Data/Hora
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          registro.datahora,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: Theme.of(context).colorScheme.primary,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+
+                                      Text(
+                                        registro.observacao,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                      ),
+                                      const SizedBox(height: 4),
+
+                                      // Endereço
+                                      FutureBuilder<String>(
+                                        future: _controller.obterEnderecoFormatado(registro.latitude, registro.longitude),
+                                        builder: (context, snapshot) {
+                                          final local = snapshot.data ?? 'Localizando...';
+                                          return Row(
+                                            children: [
+                                              const Icon(Icons.location_on, size: 14, color: Colors.redAccent),
+                                              const SizedBox(width: 2),
+                                              Expanded(
+                                                child: Text(
+                                                  local,
+                                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                  onPressed: () => _excluirRegistro(registro.id!),
+                                  tooltip: 'Excluir',
                                 ),
                               ],
                             ),
-                          ],
+                          ),
                         ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => _exibirDetalhes(registro),
                       ),
                     );
                   },
                 ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _abrirFormulario,
-        backgroundColor: Colors.blue[900],
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
+        elevation: 4,
         icon: const Icon(Icons.add_a_photo),
-        label: const Text('NOVO REGISTRO'),
+        label: const Text('NOVO REGISTRO', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
     );
   }
