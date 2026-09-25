@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'View/lista_registro.dart';
 
-/// Notificador global que guarda o estado do tema (Claro ou Escuro).
-/// O 'ValueNotifier' permite atualizar o ecrã automaticamente quando o valor muda.
+//deixa o tema inicial como claro
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
 void main() {
@@ -10,20 +9,19 @@ void main() {
   runApp(const SenaiCheckInApp());
 }
 
-/// Classe principal da aplicação que configura os temas Claro e Escuro.
+// para configurar os temas Claro e Escuro.
 class SenaiCheckInApp extends StatelessWidget {
   const SenaiCheckInApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Cor vermelha principal (Vermelho SENAI)
     const primaryRed = Color(0xFFC8102E);
 
-    // Configuração do TEMA CLARO
+    // Configuração do tema claro
     final lightTheme = ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: const Color(0xFFF8F9FA), // Fundo suave off-white
+      scaffoldBackgroundColor: const Color(0xFFF8F9FA),
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryRed,
         brightness: Brightness.light,
@@ -37,7 +35,6 @@ class SenaiCheckInApp extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      // CORREÇÃO: Utilização da classe CardThemeData em vez de CardTheme
       cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 2,
@@ -57,17 +54,17 @@ class SenaiCheckInApp extends StatelessWidget {
       ),
     );
 
-    // Configuração do TEMA ESCURO
+    // configuração do tema escuro
     final darkTheme = ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF121212), // Fundo escuro
+      scaffoldBackgroundColor: const Color(0xFF121212), 
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryRed,
         brightness: Brightness.dark,
-        primary: const Color(0xFFFF5252), // Vermelho mais claro para destacar no fundo escuro
+        primary: const Color(0xFFFF5252), 
         secondary: primaryRed,
-        surface: const Color(0xFF1E1E1E), // Cor dos cartões
+        surface: const Color(0xFF1E1E1E),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF1E1E1E),
@@ -75,7 +72,6 @@ class SenaiCheckInApp extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      // CORREÇÃO: Utilização da classe CardThemeData em vez de CardTheme
       cardTheme: CardThemeData(
         color: const Color(0xFF1E1E1E),
         elevation: 2,
@@ -104,7 +100,7 @@ class SenaiCheckInApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: lightTheme,
           darkTheme: darkTheme,
-          themeMode: modeAtual, // Define qual modo está ativo
+          themeMode: modeAtual, 
           home: const ListaRegistros(),
         );
       },

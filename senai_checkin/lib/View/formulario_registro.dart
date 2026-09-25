@@ -5,7 +5,7 @@ import '../controller/database_helper.dart';
 import '../controller/registro_controller.dart';
 import '../model/registro.dart';
 
-/// Formulário de registro adaptativo às cores do tema
+//para criar os novoos registros
 class FormularioRegistro extends StatefulWidget {
   const FormularioRegistro({super.key});
 
@@ -16,7 +16,7 @@ class FormularioRegistro extends StatefulWidget {
 class _FormularioRegistroState extends State<FormularioRegistro> {
   final _formKey = GlobalKey<FormState>();
   final _observacaoController = TextEditingController();
-  
+  //para controle da camera,gps
   final RegistroController _hardwareController = RegistroController();
   final DatabaseHelper _dbHelper = DatabaseHelper();
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -35,6 +35,7 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
     _solicitarPermissoesIniciais();
   }
 
+  //slolicita as permissões de acesso ao dispositivo
   Future<void> _solicitarPermissoesIniciais() async {
     bool concedidas = await _hardwareController.solicitarPermissoes();
     if (!concedidas && mounted) {
@@ -48,7 +49,7 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
     _audioPlayer.dispose();
     super.dispose();
   }
-
+// obtém as coordenadas GPS atuais 
   Future<void> _capturarGPS() async {
     setState(() => _carregandoGPS = true);
     try {
@@ -66,7 +67,7 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
       setState(() => _carregandoGPS = false);
     }
   }
-
+//aciona a camera para tirar a foto
   Future<void> _tirarFoto() async {
     setState(() => _carregandoFoto = true);
     try {
@@ -81,7 +82,7 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
       setState(() => _carregandoFoto = false);
     }
   }
-
+//reproz o som de confirmação quando o registro e sallvo
   Future<void> _tocarSomConfirmacao() async {
     try {
       await _audioPlayer.play(AssetSource('sounds/confirmacao.mp3'));
@@ -105,7 +106,7 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
 
     setState(() => _salvando = true);
 
-    try {
+    try {//formata a data e hora
       final agora = DateTime.now();
       final dataHoraFormatada = 
           '${agora.day.toString().padLeft(2, '0')}/${agora.month.toString().padLeft(2, '0')}/${agora.year} '
@@ -131,7 +132,7 @@ class _FormularioRegistroState extends State<FormularioRegistro> {
       setState(() => _salvando = false);
     }
   }
-
+//para os avisos, que ficaram na parte inferior da pagina
   void _exibirSnackBar(String mensagem, {required bool isErro}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

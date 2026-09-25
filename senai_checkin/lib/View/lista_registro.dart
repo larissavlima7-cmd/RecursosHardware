@@ -1,13 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../controller/database_helper.dart';
 import '../controller/registro_controller.dart';
 import '../model/registro.dart';
 import '../main.dart'; // Importante para acessar o themeNotifier
 import 'formulario_registro.dart';
 
-/// Tela principal de listagem com suporte a troca de temas e tema vermelho
+// para exibir a lista de registro
 class ListaRegistros extends StatefulWidget {
   const ListaRegistros({super.key});
 
@@ -26,7 +25,7 @@ class _ListaRegistrosState extends State<ListaRegistros> {
     super.initState();
     _carregarRegistros();
   }
-
+//consulta o bd para ter a lista de registros
   Future<void> _carregarRegistros() async {
     setState(() => _carregando = true);
     try {
@@ -43,20 +42,7 @@ class _ListaRegistrosState extends State<ListaRegistros> {
     }
   }
 
-  Future<void> _abrirMapa(double latitude, double longitude) async {
-    final Uri url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Não foi possível abrir o Google Maps.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
+//para excluir o registro
   Future<void> _excluirRegistro(int id) async {
     await _dbHelper.deleteRegistro(id);
     if (mounted) {
@@ -126,20 +112,7 @@ class _ListaRegistrosState extends State<ListaRegistros> {
               _construirLinhaDetalhe(Icons.notes, 'Observação', registro.observacao),
               const SizedBox(height: 20),
 
-              // Botões de Ação
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _abrirMapa(registro.latitude, registro.longitude);
-                  },
-                  icon: const Icon(Icons.map, color: Colors.white),
-                  label: const Text('ABRIR NO GOOGLE MAPS'),
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
+                SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () {
