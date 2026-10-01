@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "483224365275",
+    "project_id": "sa-autenticacaocombiometria",
+    "storage_bucket": "sa-autenticacaocombiometria.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:483224365275:android:af3fa8a2635d446bbe04fe",
+        "android_client_info": {
+          "package_name": "com.example.sa_localcombiometria"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdxUCZ3RFPDyLyQRZuklyRyvP_i4S8vuk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
