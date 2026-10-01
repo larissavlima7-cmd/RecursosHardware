@@ -11,6 +11,7 @@ import 'package:path/path.dart' as path;
 class RegistroController {
   final ImagePicker _picker = ImagePicker();
 
+//vai pedir a permissão para usar a camera e a localização
   Future<bool> solicitarPermissoes() async {
     var statusCamera = await Permission.camera.request();
 
@@ -26,6 +27,7 @@ class RegistroController {
     return cameraConcedida && gpsConcedido;
   }
 
+//para conseguir a localização da foto que foi tirada
   Future<Position?> obterLocalizacao() async {
     bool servicoHabilitado = await Geolocator.isLocationServiceEnabled();
     if (!servicoHabilitado) {
@@ -62,7 +64,7 @@ class RegistroController {
     }
   }
 
-  // Método que obtém a Cidade e País via API Web (resolve o erro a 100%)
+  // para encontrar a cidade e País 
   Future<String> obterEnderecoFormatado(double lat, double lng) async {
     try {
       final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng');
@@ -89,7 +91,7 @@ class RegistroController {
     }
     return 'Cidade/País não localizados';
   }
-
+//para tirar a foto
   Future<String?> capturarFoto() async {
     try {
       final XFile? foto = await _picker.pickImage(
