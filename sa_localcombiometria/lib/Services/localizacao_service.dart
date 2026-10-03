@@ -5,7 +5,7 @@ class LocalizacaoService {
   static const double latitudeEmpresa = -22.735;
   static const double longitudeEmpresa = -47.320;
   //para considerar o raio de 100 metros 
-  static const double raioMaximoMetros = 2000.0;
+  static const double raioMaximoMetros = 100.0;
 
   // vai confirmar se o GPS do celular está ativo e solicitar as permissões de localização
   Future<bool> verificarEPedirPermissoes() async {
